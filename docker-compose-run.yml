@@ -1,0 +1,12 @@
+version: '3.8'
+
+networks:
+  perfnet:
+    driver: bridge
+
+services:
+  server:
+    command: scripts/run_server.sh
+  cli:
+    command: scripts/run_iperf_client.sh
+

@@ -1,0 +1,39 @@
+version: '3.8'
+
+networks:
+  perfnet:
+    driver: bridge
+
+services:
+  iperf:
+    build: iperf_docker
+    networks:
+      perfnet:
+        aliases:
+          - iperf
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    networks:
+      - perfnet
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+  cli:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    depends_on:
+      - iperf
+      - server
+    networks:
+      - perfnet
+    environment:
+      - HELIUM_GATE=10.125.0.2
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+

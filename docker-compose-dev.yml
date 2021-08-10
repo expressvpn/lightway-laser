@@ -1,0 +1,22 @@
+version: '3.8'
+
+networks:
+  perfnet:
+    driver: bridge
+
+services:
+  server:
+    tty: true
+    build:
+      target: builder
+    command: sleep infinity
+    volumes:
+      - './:/lw_reference'
+  cli:
+    tty: true
+    build:
+      target: builder
+    command: sleep infinity
+    volumes:
+      - './:/lw_reference'
+

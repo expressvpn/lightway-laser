@@ -1,0 +1,157 @@
+---
+
+:project:
+  :use_exceptions: FALSE
+  :use_test_preprocessor: TRUE
+  :use_auxiliary_dependencies: TRUE
+  :build_root: build
+  :release_build: TRUE
+  :test_file_prefix: test_
+  :which_ceedling: gem
+  :default_tasks:
+    - test:all
+
+:release_build:
+  :output: lw.out
+
+:environment:
+
+:extension:
+  :executable: .out
+
+:paths:
+  :source:
+    - src/**
+  :test:
+    - +:test/**
+    - -:test/support
+  :include:
+    - include/*
+  :support:
+    - test/support
+
+:defines:
+  # in order to add common defines:
+  #  1) remove the trailing [] from the :common: section
+  #  2) add entries to the :common: section (e.g. :test: has TEST defined)
+  :common: &common_defines []
+  :test:
+    - *common_defines
+    - TEST
+  :test_preprocess:
+    - *common_defines
+    - TEST
+
+:cmock:
+  :mock_prefix: mock_
+  :when_no_prototypes: :warn
+  :enforce_strict_ordering: TRUE
+  :includes:
+    - libhe_testable_types.h
+  :plugins:
+    - :ignore
+    - :callback
+    - :expect_any_args
+    - :ignore_arg
+  :treat_as:
+    uint8:    HEX8
+    uint16:   HEX16
+    uint32:   UINT32
+    int8:     INT8
+    bool:     UINT8
+
+
+:plugins:
+  :load_paths:
+    - "#{Ceedling.load_path}"
+  :enabled:
+    - module_generator
+    - dependencies
+    - compile_commands_json
+
+:dependencies:
+  :libraries:
+    - :name: lightway_core
+      :source_path: third_party/lightway_core
+      :fetch:
+        :method: :git
+        :source: https://github.com/expressvpn/lightway-core.git
+        :branch: main
+      :environment:
+      - CFLAGS= -DLARGE_STATIC_BUFFERS -DWOLFSSL_DTLS_ALLOW_FUTURE -DWOLFSSL_MIN_RSA_BITS=2048 -DWOLFSSL_MIN_ECC_BITS=256 -fPIC
+      :build:
+        - /usr/local/bin/ceedling verbosity[4] release project:linux
+      :artifacts:
+        :includes:
+          - public/**
+        :static_libraries:
+          - build/artifacts/release/libhelium.a
+          - third_party/builds/wolfssl_build/lib/libwolfssl.a
+    - :name: libuv
+      :source_path: third_party/libuv
+      :artifact_path: third_party/builds/libuv
+      :fetch:
+        :method: :git
+        :source: https://github.com/libuv/libuv.git
+        :tag: v1.40.0
+      :build:
+        - "sh autogen.sh"
+        - "./configure --prefix=$(pwd)/../builds/libuv/ --enable-static --disable-shared"
+        - "make"
+        - "make install"
+      :artifacts:
+        :includes:
+          - include/*
+        :static_libraries:
+          - lib/libuv.a
+    - :name: zlog
+      :source_path: third_party/zlog
+      :artifact_path: third_party/zlog/tidy
+      :fetch:
+        :method: :git
+        :source: https://github.com/zma/zlog.git
+        :commit: 0f31521
+      :build:
+        - mkdir -p tidy
+        - cp zlog.c tidy/
+        - cp zlog.h tidy/
+        - cp zlog-config.h tidy/
+        - sed -i "s/1 << 22/1 << 10/" tidy/zlog-config.h
+        - sed -i "s/15/2/" zlog-config.h
+      :artifacts:
+        :includes:
+          - /*
+        :source:
+          - /zlog.c
+    - :name: argparse
+      :source_path: third_party/argparse
+      :artifact_path: third_party/argparse/tidy
+      :fetch:
+        :method: :git
+        :source: https://github.com/cofyc/argparse.git
+        :tag: v1.0.2
+      :build:
+        - mkdir -p tidy
+        - cp argparse.c tidy/
+        - cp argparse.h tidy/
+      :artifacts:
+        :includes:
+          - /*
+        :source:
+          - /argparse.c
+
+
+:tools_release_linker:
+  :arguments:
+    - -lpthread
+    - -lm
+    - -ldl
+
+:flags:
+  :release:
+    :compile:
+      :*:
+        - -O3
+        - -g
+
+...
