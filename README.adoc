@@ -45,7 +45,7 @@ gem install ceedling
 . Setup the network (server-only)
 +
 [source,bash]
-./scripts/setup_nat_tun.sh
+scripts/setup_nat_tun.sh
 
 . Build binary
 +
@@ -55,26 +55,11 @@ ceedling release
 . Start server
 +
 [source,bash]
-build/release/lw.out --server \
-  --protocol udp              \
-  --username test             \
-  --password test             \
-  --server_ip '0.0.0.0'       \
-  --server_port 19655         \
-  --cert certs/shared.crt     \
-  --key certs/server.key      \
-  --tun helium-test
+scripts/run_server.sh
 
 . Start client (on a different machine or container)
 +
 [source,bash]
-build/release/lw.out --client \
-  --protocol udp              \
-  --username test             \
-  --password test             \
-  --server_ip {SERVER_IP}     \
-  --server_port 19655         \
-  --cert certs/shared.crt     \
-  --tun helium-test
+scripts/run_iperf_client.sh
 
 
