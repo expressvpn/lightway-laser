@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -qqy --no-install-recommends \
   procps \
   psmisc \
   rubygems \
+  tcpdump \
   unzip \
   valgrind \
   wget \
