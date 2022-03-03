@@ -1,0 +1,10 @@
+Changes to:
+	flow.c/.h
+	server.c/.h
+	client.c/.h
+
+flow.c contains code (in nread) to create conenction need to port
+flow.c also contains code to write udp packets with the usage of udp_send need to port that too
+
+
+include/lw.h containts struct that store udp info

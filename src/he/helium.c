@@ -186,6 +186,7 @@ void configure_helium_client(lw_config_t *config, lw_state_t *state) {
   res = he_conn_set_context(state->he_conn, state);
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Failed to set the context");
 
+  zlogf_time(ZLOG_INFO_LOG_MSG, "[DEBUG] Successfully Configured Helium Client...\n");
   return;
 }
 
@@ -196,4 +197,7 @@ void start_helium_client(lw_state_t *state) {
 
   res = he_conn_client_connect(state->he_conn, state->he_ctx, NULL, NULL);
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Failed to connect!");
+  
+  zlogf_time(ZLOG_INFO_LOG_MSG, "Successfully started Helium client...\n");
+
 }

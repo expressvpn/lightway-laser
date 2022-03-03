@@ -21,10 +21,11 @@
 #include "util.h"
 #include "state.h"
 
-typedef struct send_req {
-  uv_udp_send_t req;
+typedef struct {
+  uv_write_t req;
   uv_buf_t buf;
-} send_req_t;
+} write_req_t;
+
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
   // Allocate the buffer
@@ -34,13 +35,12 @@ void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
   buf->len = suggested_size;
 }
 
-void on_read(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr,
-             unsigned flags) {
+void on_read(uv_stream_t *handle, ssize_t nread, const uv_buf_t *buf) {
   LW_CHECK_WITH_MSG(handle, "Impossible state occurred, handle was null in on_read!");
 
   // Negative reads are socket errors indicating recvmsg failed
   if(nread < 0) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Read Error on UDP socket: %s\n", uv_err_name(nread));
+    zlogf_time(ZLOG_INFO_LOG_MSG, "Read Error on TCP socket: %s\n", uv_err_name(nread));
     goto cleanup;
   }
 
@@ -62,6 +62,9 @@ void on_read(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf, const struct 
   uint64_t session = hdr->session;
 
   lw_state_t *state = (lw_state_t *)handle->data;
+
+  //TODO add addr
+  struct sockaddr *addr;
 
   if(state->is_server) {
     if(state->he_conn == NULL && session == HE_PACKET_SESSION_EMPTY) {
@@ -119,17 +122,18 @@ cleanup:
   return;
 }
 
-void on_send(uv_udp_send_t *req, int status) {
-  send_req_t *send_req = (send_req_t *)req;
-  free(send_req->buf.base);
-  free(send_req);
+/* Send call back to free buffer; used with tcp_send */
+void on_send(uv_write_t* req, int status) {
+  write_req_t *write_req = (write_req_t *)req;
+  free(write_req->buf.base);
+  free(write_req);
 }
 
-he_return_code_t udp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length, void *context) {
+he_return_code_t tcp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length, void *context) {
   // Get our context back
   lw_state_t *state = (lw_state_t *)context;
 
-  send_req_t *req = (send_req_t *)calloc(1, sizeof(send_req_t));
+  write_req_t *req = (write_req_t *)calloc(1, sizeof(write_req_t));
   LW_CHECK_WITH_MSG(req, "Unable to allocate write request!");
 
   uint8_t *output_buffer = calloc(1, LW_MAX_WIRE_MTU);
@@ -138,8 +142,7 @@ he_return_code_t udp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length
 
   req->buf = uv_buf_init((char *)output_buffer, (unsigned int)length);
 
-  int res = uv_udp_send((uv_udp_send_t *)req, &state->udp_socket, &req->buf, 1,
-                        (const struct sockaddr *)&state->send_addr, on_send);
+  int res = uv_write((uv_write_t *)req,(uv_stream_t *)&state->tcp_socket, &req->buf, 1, on_send);
 
   if(res) {
     zlogf_time(ZLOG_INFO_LOG_MSG, "Error occurred during uv_write: %s (%d)\n", uv_strerror(res),
@@ -150,6 +153,38 @@ he_return_code_t udp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length
   return HE_SUCCESS;
 }
 
+
+/* callback if a tcp client connects to server*/
+void on_connect(uv_connect_t* connection, int status) {
+  /* Implement on connect */
+  uv_stream_t* stream = connection->handle;
+  int res = uv_read_start(stream, alloc_buffer, on_read);
+  LW_CHECK_WITH_MSG(res == 0, "Unable to recv on tcp socket");
+}
+
+/* Callback if a new connection arrives */
+void on_new_connection(uv_stream_t *server, int status) {
+  if(status < 0){
+    zlogf_time(ZLOG_INFO_LOG_MSG, "New connection error %s\n", uv_strerror(status));
+    return ;
+  }
+
+  /* Create a new client socket */
+  uv_tcp_t *client = calloc(1,sizeof(uv_tcp_t));
+  int res = uv_tcp_init(server->loop,client);
+  LW_CHECK_WITH_MSG(res == 0, "Unable to initialise Client Socket");
+
+/* Accept the client */
+  res = uv_accept(server, (uv_stream_t *) client);
+  LW_CHECK_WITH_MSG(res == 0, "Unable to accept the client");
+
+/* Read from the client socket */
+  res = uv_read_start((uv_stream_t *) client,alloc_buffer,on_read);
+  LW_CHECK_WITH_MSG(res == 0, "Unable to read from client socket");
+
+}
+
+/* Callback after data is read */
 void he_session_reject(lw_state_t *state, const struct sockaddr *addr) {
   // TODO Normalise this with above
 
@@ -157,7 +192,7 @@ void he_session_reject(lw_state_t *state, const struct sockaddr *addr) {
   uint64_t error = HE_PACKET_SESSION_REJECT;
 
   // Allocate send request
-  send_req_t *req = (send_req_t *)calloc(1, sizeof(send_req_t));
+  write_req_t* req = (write_req_t *)calloc(1, sizeof(write_req_t));
   LW_CHECK_WITH_MSG(req, "Unable to allocate request");
 
   // Allocate buffer
@@ -178,10 +213,9 @@ void he_session_reject(lw_state_t *state, const struct sockaddr *addr) {
   // Initialise the write buffer
   req->buf = uv_buf_init(write_buf, sizeof(he_wire_hdr_t));
 
-  // Write it out
-  int err = uv_udp_send((uv_udp_send_t *)req, &state->udp_socket, &req->buf, 1, addr, on_send);
+  int err = uv_write((uv_write_t *)req,(uv_stream_t *) &state->tcp_socket, &req->buf, 1, on_send);
 
   if(err) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Error occurred during session reject on uv_udp_send: %d\n", err);
+    zlogf_time(ZLOG_INFO_LOG_MSG, "Error occurred during session reject on uv_write: %d\n", err);
   }
 }

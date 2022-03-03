@@ -23,11 +23,11 @@
 #include <lw.h>
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
-void on_read(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr,
-             unsigned flags);
-
+void on_new_connection(uv_stream_t *server, int status);
+void on_connect(uv_connect_t* connection, int status);
+void on_read(uv_stream_t *handle, ssize_t nread, const uv_buf_t *buf);
 void he_session_reject(lw_state_t *state, const struct sockaddr *addr);
 
-he_return_code_t udp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length, void *context);
+he_return_code_t tcp_write_cb(he_conn_t *he_conn, uint8_t *packet, size_t length, void *context);
 
 #endif  // LW_FLOW_H
