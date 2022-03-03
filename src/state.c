@@ -21,8 +21,8 @@
 
 #include "util.h"
 #include "he/helium.h"
-#include "udp/server.h"
-#include "udp/client.h"
+#include "tcp/server.h"
+#include "tcp/client.h"
 #include "tun/tun.h"
 
 lw_state_t *lw_start_server(lw_config_t *config) {
@@ -68,10 +68,10 @@ lw_state_t *lw_start_server(lw_config_t *config) {
   configure_helium_server(config, state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    configure_tcp_server(config, state);
   } else {
-    configure_udp_server(config, state);
+    zlogf_time(ZLOG_INFO_LOG_MSG, "UDP module not implemented");
+    LW_EXIT_WITH_FAILURE();
   }
 
   // Configure Tunnel
@@ -80,10 +80,10 @@ lw_state_t *lw_start_server(lw_config_t *config) {
   start_helium_server(state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    start_tcp_server(state);
   } else {
-    start_udp_server(state);
+    zlogf_time(ZLOG_INFO_LOG_MSG, "UDP module not impplemented");
+    LW_EXIT_WITH_FAILURE();
   }
 
   start_tunnel_server(state);
@@ -98,7 +98,7 @@ void on_client_kickstart(uv_timer_t *timer) {
 
   start_helium_client(state);
 
-  start_udp_client(state);
+  start_tcp_client(state);
 
   // We don't start the tunnel here, but instead during the network_config callback
 }
@@ -139,10 +139,10 @@ lw_state_t *lw_start_client(lw_config_t *config) {
   configure_helium_client(config, state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    configure_tcp_client(config, state);
   } else {
-    configure_udp_client(config, state);
+    zlogf_time(ZLOG_INFO_LOG_MSG, "UDP not supported yet");
+    LW_EXIT_WITH_FAILURE();
   }
 
   configure_tunnel_client(config, state);

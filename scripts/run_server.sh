@@ -5,7 +5,7 @@ set -e
 scripts/setup_nat_tun.sh
 
 build/release/lw.out --server \
-  --protocol udp              \
+  --protocol tcp              \
   --username test             \
   --password test             \
   --server_ip '0.0.0.0'       \

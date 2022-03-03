@@ -98,7 +98,7 @@ void tun_set_ip_internal(const char *tun_name, const char *local_ip, const char 
                          const int mtu) {
   // Only support IPv4 for now
   const sa_family_t address_family = AF_INET;
-  int s = socket(address_family, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+  int s = socket(address_family, SOCK_STREAM | SOCK_CLOEXEC, 0);
   LW_CHECK_WITH_MSG(s >= 0, "Unable to create socket for configuring tunnel");
 
   struct sockaddr_in addr = {0};

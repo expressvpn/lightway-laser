@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef LW_UDP_SERVER_H
-#define LW_UDP_SERVER_H
+#ifndef LW_TCP_CLIENT_H
+#define LW_TCP_CLIENT_H
 
 #include <lw.h>
 
-void configure_udp_server(lw_config_t *config, lw_state_t *state);
+void configure_tcp_client(lw_config_t *config, lw_state_t *state);
 
-void start_udp_server(lw_state_t *state);
+void start_tcp_client(lw_state_t *state);
 
-#endif  // LW_UDP_SERVER_H
+#endif  // LW_TCP_SERVER_H
