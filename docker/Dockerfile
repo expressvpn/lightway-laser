@@ -7,6 +7,7 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
   autoconf \
   automake \
+  bsdmainutils \
   dnsutils \
   git \
   iperf3 \
