@@ -10,7 +10,7 @@ jobs:
   linux:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Ceedling
         run: sudo gem install ceedling --no-user-install
       - name: Clobber project
@@ -21,3 +21,9 @@ jobs:
         run: ceedling dependencies:make
       - name: Build laser
         run: ceedling release
+  docker:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run docker build
+        run: docker build -f docker/Dockerfile .
