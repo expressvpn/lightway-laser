@@ -1,0 +1,23 @@
+# .github/workflows/ci.yml
+name: CI
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches: [main]
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Ceedling
+        run: sudo gem install ceedling --no-user-install
+      - name: Clobber project
+        run: ceedling clobber
+      - name: Fetch dependencies
+        run: ceedling dependencies:fetch
+      - name: Build dependencies
+        run: ceedling dependencies:make
+      - name: Build laser
+        run: ceedling release
