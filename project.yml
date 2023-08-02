@@ -129,7 +129,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/cofyc/argparse.git
-        :tag: v1.0.2
+        :tag: v1.1.0
       :build:
         - mkdir -p tidy
         - cp argparse.c tidy/
