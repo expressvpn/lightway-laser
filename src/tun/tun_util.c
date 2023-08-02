@@ -25,7 +25,6 @@
 #include <netinet/ip.h>
 #include <stddef.h>
 #include <string.h>
-#include <stropts.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
