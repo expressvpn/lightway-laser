@@ -110,7 +110,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/zma/zlog.git
-        :commit: 0f31521
+        :commit: 16f266e
       :build:
         - mkdir -p tidy
         - cp zlog.c tidy/
