@@ -103,7 +103,7 @@ void on_read(uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf, const struct 
 
   if(res != HE_SUCCESS) {
     bool fatal = he_conn_is_error_fatal(state->he_conn, res);
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Non-zero return code from libhelium: %d Fatal?: %s", res,
+    zlogf_time(ZLOG_INFO_LOG_MSG, "Non-zero return code from libhelium: %s Fatal?: %s", he_return_code_name(res),
                fatal ? "true" : "false");
     if(fatal) {
       lw_state_disconnect(state);
