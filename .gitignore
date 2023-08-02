@@ -2,4 +2,6 @@ build/
 third_party/
 debian/.debhelper/
 
+.vscode/
+
 .DS_Store
