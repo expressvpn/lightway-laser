@@ -31,6 +31,8 @@ static const char *const usage[] = {
 int main(int argc, const char **argv) {
   // Initialise logging
   zlog_init_stdout();
+  // Flush logs every second
+  zlog_init_flush_thread_with_interval(1);
   atexit(zlog_finish);
 
   int server = 0;
