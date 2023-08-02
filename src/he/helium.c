@@ -68,7 +68,7 @@ he_return_code_t nudge_time_cb(he_conn_t *client, int timeout, void *context) {
 }
 
 he_return_code_t server_event_cb(he_conn_t *client, he_conn_event_t event, void *context) {
-  zlogf_time(ZLOG_INFO_LOG_MSG, "Event occurred %d\n", event);
+  zlogf_time(ZLOG_INFO_LOG_MSG, "Event occurred %s\n", he_client_event_name(event));
 
   return HE_SUCCESS;
 }
@@ -77,7 +77,7 @@ he_return_code_t state_change_cb(he_conn_t *client, he_conn_state_t new_state, v
   // Get our context back
   lw_state_t *state = (lw_state_t *)context;
 
-  zlogf_time(ZLOG_INFO_LOG_MSG, "State changed %d\n", new_state);
+  zlogf_time(ZLOG_INFO_LOG_MSG, "State changed to %s\n", he_client_state_name(new_state));
 
   if(new_state == HE_STATE_DISCONNECTED) {
     zlogf_time(ZLOG_INFO_LOG_MSG, "Helium connection was disconnected\n");

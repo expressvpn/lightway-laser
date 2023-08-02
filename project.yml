@@ -93,7 +93,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/libuv/libuv.git
-        :tag: v1.40.0
+        :tag: v1.46.0
       :build:
         - "sh autogen.sh"
         - "./configure --prefix=$(pwd)/../builds/libuv/ --enable-static --disable-shared"
@@ -110,7 +110,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/zma/zlog.git
-        :commit: 0f31521
+        :commit: 16f266e
       :build:
         - mkdir -p tidy
         - cp zlog.c tidy/
@@ -129,7 +129,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/cofyc/argparse.git
-        :tag: v1.0.2
+        :tag: v1.1.0
       :build:
         - mkdir -p tidy
         - cp argparse.c tidy/
