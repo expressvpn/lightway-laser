@@ -21,6 +21,8 @@
 
 #include "util.h"
 #include "he/helium.h"
+#include "tcp/tcp_client.h"
+#include "tcp/tcp_server.h"
 #include "udp/server.h"
 #include "udp/client.h"
 #include "tun/tun.h"
@@ -54,6 +56,7 @@ lw_state_t *lw_start_server(lw_config_t *config) {
 
   // Also copy the tun_name as-is
   strncpy(state->tun_name, config->tun_name, sizeof(state->tun_name));
+  state->is_streaming = config->streaming;
 
   // Initialise these w/ hardcoded values for now
   state->peer_ip = "10.125.0.1";
@@ -68,8 +71,7 @@ lw_state_t *lw_start_server(lw_config_t *config) {
   configure_helium_server(config, state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    configure_tcp_server(config, state);
   } else {
     configure_udp_server(config, state);
   }
@@ -80,8 +82,7 @@ lw_state_t *lw_start_server(lw_config_t *config) {
   start_helium_server(state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    start_tcp_server(state);
   } else {
     start_udp_server(state);
   }
@@ -95,10 +96,15 @@ void on_client_kickstart(uv_timer_t *timer) {
   lw_state_t *state = (lw_state_t *)timer->data;
 
   zlogf_time(ZLOG_INFO_LOG_MSG, "Kickstarting client\n");
+  zlog_flush_buffer();
 
-  start_helium_client(state);
+  if (!state->is_streaming) {
+    start_helium_client(state);
 
-  start_udp_client(state);
+    start_udp_client(state);
+  } else {
+    start_tcp_client(state);
+  }
 
   // We don't start the tunnel here, but instead during the network_config callback
 }
@@ -131,6 +137,7 @@ lw_state_t *lw_start_client(lw_config_t *config) {
   // Also copy the tun_name as-is
   strncpy(state->tun_name, config->tun_name, sizeof(state->tun_name));
   state->password[HE_CONFIG_TEXT_FIELD_LENGTH - 1] = '\0';
+  state->is_streaming = config->streaming;
 
   // Initialise libuv
   state->loop = uv_default_loop();
@@ -139,8 +146,7 @@ lw_state_t *lw_start_client(lw_config_t *config) {
   configure_helium_client(config, state);
 
   if(config->streaming) {
-    zlogf_time(ZLOG_INFO_LOG_MSG, "Streaming is not supported yet");
-    LW_EXIT_WITH_FAILURE();
+    configure_tcp_client(config, state);
   } else {
     configure_udp_client(config, state);
   }
@@ -176,7 +182,9 @@ void lw_state_server_connect(lw_state_t *state, const struct sockaddr *addr) {
   start_helium_server_connection(state);
 
   // Copy the IP address and session
-  memcpy(&state->send_addr, addr, sizeof(struct sockaddr));
+  if (addr) {
+    memcpy(&state->send_addr, addr, sizeof(struct sockaddr));
+  }
   state->session = he_conn_get_session_id(state->he_conn);
   state->assigned_ip = ip2int("10.125.0.42");
 }

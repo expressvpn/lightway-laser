@@ -78,6 +78,10 @@ typedef struct lw_state {
   char const *dns_ip;
   int mtu;
 
+  //TCP Client socket
+  uv_connect_t tcp_connect;
+  uv_tcp_t tcp_client;
+
   // The external IP viewable to the outside world
   uint32_t assigned_ip;
 
@@ -92,6 +96,8 @@ typedef struct lw_state {
 
   // Server or not -- most things don't actually care but some do
   bool is_server;
+  // is streaming
+  bool is_streaming;
 
 } lw_state_t;
 

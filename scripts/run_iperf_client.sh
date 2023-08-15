@@ -10,9 +10,9 @@ echo "Resolved to target ${TARGET} server ${SERVER}"
 echo "Check that we have connectivity to the lightway server"
 ping -w1 "${SERVER}"
 
-build/release/lw.out --client --protocol udp --username test --password test --server_ip ${SERVER} --server_port 19655 --cert certs/shared.crt --tun helium-test &
+build/release/lw.out --client --protocol tcp --username test --password test --server_ip ${SERVER} --server_port 19655 --cert certs/shared.crt --tun helium-test &
 
-sleep 2
+sleep 15
 
 echo "Setting route to ${TARGET} via ${HELIUM_GATE}"
 ip route add "${TARGET}" via "${HELIUM_GATE}"

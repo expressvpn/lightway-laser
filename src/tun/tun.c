@@ -66,7 +66,7 @@ void on_tun_event(uv_poll_t *handle, int status, int events) {
         case HE_PACKET_IP4: {
           int res = he_conn_inside_packet_received(state->he_conn, msg_content, length);
           if(res != HE_SUCCESS) {
-            zlogf_time(ZLOG_INFO_LOG_MSG, "Error returned from libhe for tun packets: %d", res);
+            zlogf_time(ZLOG_INFO_LOG_MSG, "Error returned from libhe for tun packets: %s\n", he_return_code_name(res));
           }
           break;  // Out of switch, not the while loop
         }

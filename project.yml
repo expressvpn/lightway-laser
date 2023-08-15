@@ -76,9 +76,7 @@
       :fetch:
         :method: :git
         :source: https://github.com/expressvpn/lightway-core.git
-        :branch: main
-      :environment:
-      - CFLAGS= -DLARGE_STATIC_BUFFERS -DWOLFSSL_DTLS_ALLOW_FUTURE -DWOLFSSL_MIN_RSA_BITS=2048 -DWOLFSSL_MIN_ECC_BITS=256 -fPIC
+        :branch: dtls13-testing
       :build:
         - /usr/local/bin/ceedling verbosity[4] release project:linux
       :artifacts:
@@ -87,6 +85,7 @@
         :static_libraries:
           - build/artifacts/release/libhelium.a
           - third_party/builds/wolfssl_build/lib/libwolfssl.a
+          # - third_party/liboqs/build/lib/liboqs.a
     - :name: libuv
       :source_path: third_party/libuv
       :artifact_path: third_party/builds/libuv

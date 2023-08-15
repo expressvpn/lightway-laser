@@ -84,6 +84,10 @@ he_return_code_t state_change_cb(he_conn_t *client, he_conn_state_t new_state, v
     lw_state_post_disconnect_cleanup(state);
   }
 
+  if(new_state == HE_STATE_ONLINE) {
+    // zlogf_time(ZLOG_INFO_LOG_MSG, "CURVE: %s\n", he_conn_get_curve_name(client));
+  }
+
   return HE_SUCCESS;
 }
 
@@ -145,6 +149,7 @@ void start_helium_server(lw_state_t *state) {
 
 void start_helium_server_connection(lw_state_t *state) {
   state->he_conn = he_conn_create();
+  // he_conn_enable_debugging(state->he_conn, NULL);
   LW_CHECK_WITH_MSG(state->he_conn, "Unable to allocate new Helium connection");
 
   int res = he_conn_set_outside_mtu(state->he_conn, LW_MAX_WIRE_MTU);
@@ -155,6 +160,8 @@ void start_helium_server_connection(lw_state_t *state) {
 
   res = he_conn_server_connect(state->he_conn, state->he_ctx, NULL, NULL);
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Helium connect failed");
+  zlogf_time(ZLOG_INFO_LOG_MSG, "Server connection start\n");
+  zlog_flush_buffer();
 }
 
 void configure_helium_client(lw_config_t *config, lw_state_t *state) {
@@ -172,6 +179,7 @@ void configure_helium_client(lw_config_t *config, lw_state_t *state) {
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Failed to set the server key path");
 
   state->he_conn = he_conn_create();
+  // he_conn_enable_debugging(state->he_conn, NULL);
   LW_CHECK_WITH_MSG(state->he_conn, "Failed to create connection");
 
   res = he_conn_set_username(state->he_conn, config->username);
@@ -195,5 +203,8 @@ void start_helium_client(lw_state_t *state) {
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Failed to start He context!");
 
   res = he_conn_client_connect(state->he_conn, state->he_ctx, NULL, NULL);
+  if (res != HE_SUCCESS) {
+    zlogf_time(ZLOG_INFO_LOG_MSG, "CONNECT FAILED: %d\n", res);
+  }
   LW_CHECK_WITH_MSG(res == HE_SUCCESS, "Failed to connect!");
 }
