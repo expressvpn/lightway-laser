@@ -87,6 +87,7 @@
         :static_libraries:
           - build/artifacts/release/libhelium.a
           - third_party/builds/wolfssl_build/lib/libwolfssl.a
+          - third_party/liboqs/build/lib/liboqs.a
     - :name: libuv
       :source_path: third_party/libuv
       :artifact_path: third_party/builds/libuv
