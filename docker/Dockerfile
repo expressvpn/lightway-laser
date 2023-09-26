@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -qqy --no-install-recommends \
   valgrind \
   wget \
   strace \
-  vim
+  vim \
+  cmake
 
 # Set up ceedling
 RUN gem install ceedling
