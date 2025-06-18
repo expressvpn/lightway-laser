@@ -8,7 +8,7 @@ on:
     branches: [main]
 jobs:
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - name: Install Ceedling
@@ -22,7 +22,7 @@ jobs:
       - name: Build laser
         run: ceedling release
   docker:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - name: Run docker build

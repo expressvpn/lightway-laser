@@ -1,4 +1,4 @@
-FROM debian/buildd:buster as builder
+FROM debian/buildd:bookworm as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV LANG C.UTF-8
@@ -37,6 +37,6 @@ WORKDIR /lw_reference
 FROM builder
 COPY ./ .
 RUN ceedling clobber
-RUN ceedling verbosity[4] dependencies:fetch
-RUN ceedling verbosity[4] dependencies:make
-RUN ceedling verbosity[4] release
+RUN ceedling dependencies:fetch
+RUN ceedling dependencies:make
+RUN ceedling release
